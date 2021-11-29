@@ -4660,9 +4660,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nexs-minimal-example@workspace:examples/nexs-basic-example":
+"nexs-bare-example@workspace:examples/nexs-bare-example":
   version: 0.0.0-use.local
-  resolution: "nexs-minimal-example@workspace:examples/nexs-basic-example"
+  resolution: "nexs-bare-example@workspace:examples/nexs-bare-example"
+  dependencies:
+    "@koreanwglasses/nexs": "workspace:*"
+    "@koreanwglasses/nexs-server": "workspace:*"
+    "@types/express-session": ^1.17.4
+    "@types/node": 16.11.10
+    "@types/react": 17.0.37
+    eslint: 7
+    eslint-config-next: 12.0.4
+    express-session: ^1.17.2
+    next: 12.0.4
+    nodemon: ^2.0.15
+    react: 17.0.2
+    react-dom: 17.0.2
+    ts-node: ^10.4.0
+    typescript: 4.5.2
+  languageName: unknown
+  linkType: soft
+
+"nexs-basic-example@workspace:examples/nexs-basic-example":
+  version: 0.0.0-use.local
+  resolution: "nexs-basic-example@workspace:examples/nexs-basic-example"
   dependencies:
     "@emotion/react": ^11.7.0
     "@emotion/styled": ^11.6.0
