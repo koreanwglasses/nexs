@@ -3,7 +3,7 @@ import { get, post } from "@koreanwglasses/nexs-core";
 import { SocketIOContext } from "../components/socket-provider";
 
 export function useSocket(
-  listeners: () => {
+  listeners_?: () => {
     [event: string]: (...args: any) => unknown;
   },
   deps?: unknown[]
@@ -11,11 +11,11 @@ export function useSocket(
   const context = useContext(SocketIOContext);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const listeners_ = useMemo(listeners, deps);
+  const listeners = useMemo(listeners_ ?? (() => undefined), deps);
 
   useEffect(() => {
-    if (context.socket) {
-      const eventHandlers = Object.entries(listeners_) as [
+    if (context.socket && listeners) {
+      const eventHandlers = Object.entries(listeners) as [
         string,
         (...args: any) => unknown
       ][];
@@ -30,9 +30,9 @@ export function useSocket(
         );
       };
     }
-  }, [context.socket, listeners_]);
+  }, [context.socket, listeners]);
 
-  return !!context;
+  return context.socket;
 }
 
 export function useSocketIdx() {
