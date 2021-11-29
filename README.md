@@ -1,3 +1,3 @@
 # nexs
 
-![NEXS](https://user-images.githubusercontent.com/12959081/143937078-c1bd82c9-6980-4abf-aa66-a2b483838829.png)
+<img width="763" alt="NEXS" src="https://user-images.githubusercontent.com/12959081/143937609-bdabfaa9-1d54-4929-a2a8-f59c4b36ac76.png">
