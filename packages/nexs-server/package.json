@@ -1,6 +1,6 @@
 {
   "name": "@koreanwglasses/nexs-server",
-  "version": "0.0.0-alpha.2",
+  "version": "0.0.0-alpha.4",
   "description": "Next.js application with Express server and Socket.IO",
   "repository": "git@github.com:koreanwglasses/nexs.git",
   "author": "koreanwglasses <koreanwglasses@gmail.com>",

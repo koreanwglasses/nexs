@@ -32,12 +32,14 @@ function nexs({
   next: next_,
   session: session_,
   express: express_,
+  io: io_,
   server: server_,
   dev,
 }: {
   session?: Express.RequestHandler;
   next?: NextServer;
   express?: Express.Express;
+  io?: IO;
   server?: http.Server | https.Server;
   dev?: boolean;
 }) {
@@ -47,7 +49,7 @@ function nexs({
 
   // Initialize Express and Socket.IO
   const express = express_ ?? Express();
-  const io = new IO() as IOWithSession;
+  const io = (io_ ?? new IO()) as IOWithSession;
 
   // Session setup
   const session =
