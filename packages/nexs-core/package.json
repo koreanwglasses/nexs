@@ -1,6 +1,6 @@
 {
   "name": "@koreanwglasses/nexs-core",
-  "version": "0.0.0-alpha.2",
+  "version": "0.0.0-alpha.3",
   "description": "Next.js application with Express server and Socket.IO",
   "repository": "git@github.com:koreanwglasses/nexs.git",
   "author": "koreanwglasses <koreanwglasses@gmail.com>",
@@ -18,6 +18,7 @@
     "@types/node": "^16.11.10",
     "next": "^12.0.4",
     "socket.io": "^4.4.0",
+    "socket.io-client": "^4.4.0",
     "tsc": "^2.0.3",
     "typescript": "^4.5.2"
   }

@@ -64,7 +64,7 @@ function nexs({
   io.use(iosession(session, { autoSave: true }) as any);
 
   // Socket.IO setup
-  io.on("connect", (socket) => {
+  io.on("socket:link", (socket) => {
     const session = socket.handshake.session!;
     pruneSockets(session, io);
 

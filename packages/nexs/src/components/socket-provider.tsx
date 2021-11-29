@@ -1,28 +1,18 @@
 import React, { createContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import type { Socket } from "socket.io-client";
+import { NEXSSocket, nexssocket } from "@koreanwglasses/nexs-core";
 
-export const SocketIOContext = createContext<{
-  socket?: Socket;
-  socketIdx?: number;
-}>({});
+export const SocketIOContext = createContext<NEXSSocket | undefined>(undefined);
 
 const SocketProvider = ({ children }: React.PropsWithChildren<{}>) => {
-  const [context, setContext] = useState<{
-    socket?: Socket;
-    socketIdx?: number;
-  }>({});
+  const [socket, setSocket] = useState<NEXSSocket | undefined>();
 
   useEffect(() => {
-    const socket = io();
-    setContext({ socket });
-
-    socket.on("socket:linked", ({ socketIdx }) => {
-      setContext({ socket, socketIdx });
-    });
+    const socket = nexssocket(io());
+    setSocket(socket);
 
     socket.on("disconnect", () => {
-      setContext({});
+      setSocket(undefined);
     });
 
     return () => {
@@ -31,7 +21,7 @@ const SocketProvider = ({ children }: React.PropsWithChildren<{}>) => {
   }, []);
 
   return (
-    <SocketIOContext.Provider value={context}>
+    <SocketIOContext.Provider value={socket}>
       {children}
     </SocketIOContext.Provider>
   );

@@ -1,5 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo } from "react";
-import { get, post } from "@koreanwglasses/nexs-core";
+import { useContext, useEffect, useMemo } from "react";
 import { SocketIOContext } from "../components/socket-provider";
 
 export function useSocket(
@@ -8,57 +7,25 @@ export function useSocket(
   },
   deps?: unknown[]
 ) {
-  const context = useContext(SocketIOContext);
+  const socket = useContext(SocketIOContext);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const listeners = useMemo(listeners_ ?? (() => undefined), deps);
 
   useEffect(() => {
-    if (context.socket && listeners) {
+    if (socket && listeners) {
       const eventHandlers = Object.entries(listeners) as [
         string,
         (...args: any) => unknown
       ][];
 
-      eventHandlers.forEach(([event, handler]) =>
-        context.socket!.on(event, handler)
-      );
+      eventHandlers.forEach(([event, handler]) => socket.on(event, handler));
 
       return () => {
-        eventHandlers.map(([event, handler]) =>
-          context.socket?.off(event, handler)
-        );
+        eventHandlers.map(([event, handler]) => socket.off(event, handler));
       };
     }
-  }, [context.socket, listeners]);
+  }, [socket, listeners]);
 
-  return context.socket;
-}
-
-export function useSocketIdx() {
-  const context = useContext(SocketIOContext);
-  return context.socketIdx;
-}
-
-export function useSockPost() {
-  const socketIdx = useSocketIdx();
-  return useCallback(
-    (
-      url: string,
-      body?: any,
-      query: Record<string, string | number | boolean | undefined> = {}
-    ) => post(`${url}`, body, { ...query, socketIdx }),
-    [socketIdx]
-  );
-}
-
-export function useSockGet() {
-  const socketIdx = useSocketIdx();
-  return useCallback(
-    (
-      url: string,
-      query: Record<string, string | number | boolean | undefined> = {}
-    ) => get(url, { ...query, socketIdx }),
-    [socketIdx]
-  );
+  return socket;
 }
