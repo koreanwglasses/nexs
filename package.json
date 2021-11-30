@@ -1,5 +1,4 @@
 {
-  "name": "@koreanwglasses/nexs-monorepo",
   "workspaces": [
     "examples/*",
     "packages/*"

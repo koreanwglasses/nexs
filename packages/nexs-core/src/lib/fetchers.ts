@@ -49,38 +49,37 @@ async function fetch2(
   url: string,
   method: string,
   body?: any,
-  query?: Record<string, string | number | boolean | undefined>
+  query?: Record<string, string | number | boolean | undefined>,
+  init: RequestInit = {}
 ) {
-  const response = await fetch(
-    joinQuery(url, query),
-    method !== "get"
+  const response = await fetch(joinQuery(url, query), {
+    ...(method.toLowerCase() === "get" ? {} : { method }),
+    ...(body
       ? {
-          method,
-          ...(body
-            ? {
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(body),
-              }
-            : {}),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
         }
-      : undefined
-  );
+      : {}),
+    ...init,
+  });
   return parseResponse(response);
 }
 
-export async function post<T=any>(
+export async function post<T = any>(
   url: string,
   body?: any,
-  query?: Record<string, string | number | boolean | undefined>
+  query?: Record<string, string | number | boolean | undefined>,
+  init?: RequestInit
 ) {
-  return await fetch2(url, "post", body, query) as T;
+  return (await fetch2(url, "post", body, query, init)) as T;
 }
 
-export async function get<T=any>(
+export async function get<T = any>(
   url: string,
-  query?: Record<string, string | number | boolean | undefined>
+  query?: Record<string, string | number | boolean | undefined>,
+  init?: RequestInit
 ) {
-  return await fetch2(url, "get", undefined, query) as T;
+  return (await fetch2(url, "get", undefined, query, init)) as T;
 }

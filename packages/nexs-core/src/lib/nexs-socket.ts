@@ -7,11 +7,16 @@ type Listener<T> = (data: T) => any;
 export interface NEXSSocket extends IOSocket {
   getSocketIdx(): Promise<number>;
 
-  get<T=any>(url: string, query?: Query): Promise<T>;
-  post<T=any>(url: string, body?: any, query?: Query): Promise<T>;
+  get<T = any>(url: string, query?: Query, init?: RequestInit): Promise<T>;
+  post<T = any>(
+    url: string,
+    body?: any,
+    query?: Query,
+    init?: RequestInit
+  ): Promise<T>;
 
-  subscribe<T=any>(url: string, listener: Listener<T>): void;
-  subscribe<T=any>(url: string, query: Query, listener: Listener<T>): void;
+  subscribe<T = any>(url: string, listener: Listener<T>): void;
+  subscribe<T = any>(url: string, query: Query, listener: Listener<T>): void;
 }
 
 export function nexssocket(iosocket: IOSocket) {
@@ -20,19 +25,28 @@ export function nexssocket(iosocket: IOSocket) {
   );
   if (iosocket.connected) iosocket.emit("socket:link");
 
-  const nexssocket = Object.create(iosocket) as NEXSSocket;
-
-  (async() => {
-    console.log(await socketIdxPromise)
-  })()
+  const nexssocket = iosocket as NEXSSocket;
 
   nexssocket.getSocketIdx = () => socketIdxPromise;
 
-  nexssocket.get = async <T>(url: string, query: Query = {}) =>
-    await get<T>(url, { ...query, socketIdx: await socketIdxPromise });
+  nexssocket.get = async <T>(
+    url: string,
+    query: Query = {},
+    init?: RequestInit
+  ) => await get<T>(url, { ...query, socketIdx: await socketIdxPromise }, init);
 
-  nexssocket.post = async <T>(url: string, body?: any, query: Query = {}) =>
-    await post<T>(`${url}`, body, { ...query, socketIdx: await socketIdxPromise });
+  nexssocket.post = async <T>(
+    url: string,
+    body?: any,
+    query: Query = {},
+    init?: RequestInit
+  ) =>
+    await post<T>(
+      `${url}`,
+      body,
+      { ...query, socketIdx: await socketIdxPromise },
+      init
+    );
 
   nexssocket.subscribe = async <T>(
     url: string,
@@ -77,5 +91,5 @@ export function nexssocket(iosocket: IOSocket) {
     });
   };
 
-  return nexssocket as NEXSSocket;
+  return nexssocket;
 }

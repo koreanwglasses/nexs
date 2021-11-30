@@ -60,7 +60,7 @@ function nexs({
       saveUninitialized: true,
     });
 
-  if (!express_) express.use(session);
+  express.use(session);
   io.use(iosession(session, { autoSave: true }) as any);
 
   // Socket.IO setup
@@ -74,7 +74,9 @@ function nexs({
     session.save();
 
     socket.emit("socket:linked", { socketIdx: i });
-    socket.on("socket:link", () => socket.emit("socket:linked", { socketIdx: i }));
+    socket.on("socket:link", () =>
+      socket.emit("socket:linked", { socketIdx: i })
+    );
 
     socket.on("disconnect", () => {
       const session = socket.handshake.session!;
