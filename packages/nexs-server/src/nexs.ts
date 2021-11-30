@@ -64,7 +64,7 @@ function nexs({
   io.use(iosession(session, { autoSave: true }) as any);
 
   // Socket.IO setup
-  io.on("socket:link", (socket) => {
+  io.on("connect", (socket) => {
     const session = socket.handshake.session!;
     pruneSockets(session, io);
 
@@ -74,6 +74,7 @@ function nexs({
     session.save();
 
     socket.emit("socket:linked", { socketIdx: i });
+    socket.on("socket:link", () => socket.emit("socket:linked", { socketIdx: i }));
 
     socket.on("disconnect", () => {
       const session = socket.handshake.session!;

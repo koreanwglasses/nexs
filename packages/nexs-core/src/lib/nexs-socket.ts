@@ -7,36 +7,38 @@ type Listener<T> = (data: T) => any;
 export interface NEXSSocket extends IOSocket {
   getSocketIdx(): Promise<number>;
 
-  get(url: string, query?: Query): Promise<any>;
-  post(url: string, body?: any, query?: Query): Promise<any>;
+  get<T=any>(url: string, query?: Query): Promise<T>;
+  post<T=any>(url: string, body?: any, query?: Query): Promise<T>;
 
-  subscribe<T>(url: string, listener: Listener<T>): void;
-  subscribe<T>(url: string, query: Query, listener: Listener<T>): void;
+  subscribe<T=any>(url: string, listener: Listener<T>): void;
+  subscribe<T=any>(url: string, query: Query, listener: Listener<T>): void;
 }
 
 export function nexssocket(iosocket: IOSocket) {
-  if (iosocket.connected) iosocket.emit("socket:link");
-  else iosocket.on("connect", () => iosocket.emit("socket:link"));
-
   const socketIdxPromise = new Promise<number>((res) =>
     iosocket.once("socket:linked", ({ socketIdx }) => res(socketIdx))
   );
+  if (iosocket.connected) iosocket.emit("socket:link");
 
-  const nexssocket = Object.create(iosocket);
+  const nexssocket = Object.create(iosocket) as NEXSSocket;
+
+  (async() => {
+    console.log(await socketIdxPromise)
+  })()
 
   nexssocket.getSocketIdx = () => socketIdxPromise;
 
-  nexssocket.get = async (url: string, query: Query = {}) =>
-    get(url, { ...query, socketIdx: await socketIdxPromise });
+  nexssocket.get = async <T>(url: string, query: Query = {}) =>
+    await get<T>(url, { ...query, socketIdx: await socketIdxPromise });
 
-  nexssocket.post = async (url: string, body?: any, query: Query = {}) =>
-    post(`${url}`, body, { ...query, socketIdx: await socketIdxPromise });
+  nexssocket.post = async <T>(url: string, body?: any, query: Query = {}) =>
+    await post<T>(`${url}`, body, { ...query, socketIdx: await socketIdxPromise });
 
-  nexssocket.subscribe = async function* <T>(
+  nexssocket.subscribe = async <T>(
     url: string,
     query_listener_?: Query | Listener<T>,
     listener_?: Listener<T>
-  ) {
+  ) => {
     const query = (
       typeof query_listener_ !== "function" ? query_listener_ : {}
     ) as Query;
@@ -68,7 +70,6 @@ export function nexssocket(iosocket: IOSocket) {
     const { data, dataKey } = response;
 
     listener(data);
-    yield data;
 
     iosocket.on(`subscription:${dataKey}:mutate`, async (data?: T) => {
       if (typeof data !== "undefined") listener(data);

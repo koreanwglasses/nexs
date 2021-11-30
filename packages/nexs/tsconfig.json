@@ -18,5 +18,5 @@
     "declaration": true,
     "outDir": "dist"
   },
-  "include": ["src", "../nexs-core/src/lib/nexs-socket.ts"]
+  "include": ["src"]
 }

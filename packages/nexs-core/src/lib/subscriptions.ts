@@ -31,8 +31,18 @@ export function subscribable<T>({
           : dataKeyFromURL(req.url!);
 
       const send = (data: T) => {
-        subscribe(req, dataKey_);
-        res.json({ data, dataKey: dataKey_ });
+        try {
+          subscribe(req, dataKey_);
+        } catch (e) {
+          return res
+            .status((e as any).code ?? 500)
+            .send(
+              (e as any).message ??
+                "Unknown error occured while trying to subscribe"
+            );
+        }
+
+        return res.json({ data, dataKey: dataKey_ });
       };
 
       const res_ = Object.create(res);

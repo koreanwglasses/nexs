@@ -1,6 +1,6 @@
 {
   "name": "@koreanwglasses/nexs-server",
-  "version": "0.0.0-alpha.5",
+  "version": "0.0.0-alpha.6",
   "description": "Next.js application with Express server and Socket.IO",
   "repository": "git@github.com:koreanwglasses/nexs.git",
   "author": "koreanwglasses <koreanwglasses@gmail.com>",
@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "prepare": "$npm_execpath run build",
-    "build": "tsc"
+    "build": "rm -rf dist && tsc"
   },
   "dependencies": {
     "@koreanwglasses/nexs-core": "workspace:*",

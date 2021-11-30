@@ -7,20 +7,18 @@ import {
   Collapse,
   Typography,
 } from "@mui/material";
-import { useList } from "react-use";
-import { useSocket, useSocketIdx, useSockPost, useSubscribe } from "@koreanwglasses/nexs";
+import { useList, useAsync } from "react-use";
+import { useSocket, useSubscribe } from "@koreanwglasses/nexs";
 
 const Ping = () => {
   const [messages, { push }] = useList<string>();
   const [waiting, setWaiting] = useState<boolean>();
   const [error, setError] = useState<Error>();
-  const sockPost = useSockPost();
 
   const { data } = useSubscribe<{ numSockets: number }>("/api/socket-count");
   const { numSockets } = data ?? {};
-  const socketIdx = useSocketIdx();
 
-  useSocket(
+  const socket = useSocket(
     () => ({
       message: (message: string) => {
         push(message);
@@ -28,6 +26,11 @@ const Ping = () => {
       },
     }),
     [push]
+  );
+
+  const { value: socketIdx } = useAsync(
+    async () => await socket?.getSocketIdx(),
+    [socket]
   );
 
   return (
@@ -62,7 +65,7 @@ const Ping = () => {
         onClick={async () => {
           try {
             // Make a post request and specify the return socket id
-            await sockPost("/api/ping");
+            await socket?.post("/api/ping");
             setWaiting(true);
           } catch (e) {
             setError(e as any);

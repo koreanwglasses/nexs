@@ -70,17 +70,17 @@ async function fetch2(
   return parseResponse(response);
 }
 
-export async function post(
+export async function post<T=any>(
   url: string,
   body?: any,
   query?: Record<string, string | number | boolean | undefined>
 ) {
-  return fetch2(url, "post", body, query);
+  return await fetch2(url, "post", body, query) as T;
 }
 
-export async function get(
+export async function get<T=any>(
   url: string,
   query?: Record<string, string | number | boolean | undefined>
 ) {
-  return fetch2(url, "get", undefined, query);
+  return await fetch2(url, "get", undefined, query) as T;
 }
