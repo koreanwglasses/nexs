@@ -78,6 +78,10 @@ function nexs({
       socket.emit("socket:linked", { socketIdx: i })
     );
 
+    socket.on("subscription:unsub", (dataKey) => {
+      socket.leave(`subscribers:${dataKey}`);
+    })
+
     socket.on("disconnect", () => {
       const session = socket.handshake.session!;
       delete session.sockets[i];

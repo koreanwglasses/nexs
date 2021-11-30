@@ -4,6 +4,10 @@ import type { Socket as IOSocket } from "socket.io-client";
 type Query = Record<string, string | number | boolean | undefined>;
 type Listener<T> = (data: T) => any;
 
+export interface Subscription {
+  unsub(): void;
+}
+
 export interface NEXSSocket extends IOSocket {
   getSocketIdx(): Promise<number>;
 
@@ -15,8 +19,12 @@ export interface NEXSSocket extends IOSocket {
     init?: RequestInit
   ): Promise<T>;
 
-  subscribe<T = any>(url: string, listener: Listener<T>): void;
-  subscribe<T = any>(url: string, query: Query, listener: Listener<T>): void;
+  subscribe<T = any>(url: string, listener: Listener<T>): Subscription;
+  subscribe<T = any>(
+    url: string,
+    query: Query,
+    listener: Listener<T>
+  ): Subscription;
 }
 
 export function nexssocket(iosocket: IOSocket) {
@@ -48,7 +56,7 @@ export function nexssocket(iosocket: IOSocket) {
       init
     );
 
-  nexssocket.subscribe = async <T>(
+  nexssocket.subscribe = <T>(
     url: string,
     query_listener_?: Query | Listener<T>,
     listener_?: Listener<T>
@@ -61,34 +69,49 @@ export function nexssocket(iosocket: IOSocket) {
       typeof query_listener_ === "function" ? query_listener_ : listener_
     ) as Listener<T>;
 
-    const response = await nexssocket.get(url, {
-      ...query,
-      subscribe: true,
-    });
-
-    if (
-      !response ||
-      !(typeof response === "object") ||
-      !("data" in response) ||
-      typeof response.dataKey !== "string"
-    ) {
-      throw new Error(
-        `Expected a response with body of type { data: T, dataKey: string } from server. Got: ${JSON.stringify(
-          response,
-          null,
-          2
-        )}`
-      );
-    }
-
-    const { data, dataKey } = response;
-
-    listener(data);
-
-    iosocket.on(`subscription:${dataKey}:mutate`, async (data?: T) => {
+    const mutationListener = async (data?: T) => {
       if (typeof data !== "undefined") listener(data);
       else listener(await nexssocket.get(url, query));
-    });
+    };
+
+    const dataKeyPromise = (async () => {
+      const response = await nexssocket.get(url, {
+        ...query,
+        subscribe: true,
+      });
+
+      if (
+        !response ||
+        !(typeof response === "object") ||
+        !("data" in response) ||
+        typeof response.dataKey !== "string"
+      ) {
+        throw new Error(
+          `Expected a response with body of type { data: T, dataKey: string } from server. Got: ${JSON.stringify(
+            response,
+            null,
+            2
+          )}`
+        );
+      }
+
+      const { data, dataKey } = response;
+
+      listener(data);
+      iosocket.on(`subscription:${dataKey}:mutate`, mutationListener);
+
+      return dataKey;
+    })();
+
+    return {
+      async unsub() {
+        iosocket.off(
+          `subscription:${await dataKeyPromise}:mutate`,
+          mutationListener
+        );
+        iosocket.emit(`subscription:unsub`, await dataKeyPromise);
+      },
+    };
   };
 
   return nexssocket;
