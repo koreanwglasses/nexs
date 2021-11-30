@@ -12,7 +12,12 @@ export function useSubscribe<T = any>(
 
   const socket = useSocket();
   useEffect(() => {
-    socket?.subscribe(url, query, (data: T) => result.mutate(data));
+    const subscription = socket?.subscribe(url, query, (data: T) =>
+      result.mutate(data)
+    );
+    return () => {
+      subscription?.unsub();
+    };
   }, [socket]);
 
   return result;

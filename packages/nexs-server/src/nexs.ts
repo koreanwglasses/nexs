@@ -28,68 +28,54 @@ interface IOWithSession extends IO {
   on<Ev extends string>(ev: Ev, cb: CB<Ev>): this;
 }
 
-function nexs({
-  next: next_,
-  nextOpts = {},
+function nexs(
+  opts: {
+    next?: Parameters<typeof Next>[0];
+    session?: Partial<
+      ExpressSession.SessionOptions & {
+        createStore: (session: typeof ExpressSession) => ExpressSession.Store;
+      }
+    >;
+    io?: Partial<IOServerOptions>;
+    server?: http.ServerOptions | https.ServerOptions;
+    dev?: boolean;
+  } = {}
+) {
+  const {
+    next: nextOpts = {},
+    session: { createStore, ...sessionOpts } = {},
+    io: ioOpts ,
+    server: serverOpts = {},
+    dev = true,
+  } = opts;
 
-  session: session_,
-  sessionOpts = {},
-
-  express: express_,
-
-  io: io_,
-  ioOpts = {},
-
-  server: server_,
-  serverOpts = {},
-
-  dev,
-}: {
-  next?: NextServer;
-  nextOpts?: Parameters<typeof Next>[0];
-
-  session?: Express.RequestHandler;
-  sessionOpts?: Partial<ExpressSession.SessionOptions>;
-
-  express?: Express.Express;
-
-  io?: IO;
-  ioOpts?: Partial<IOServerOptions>;
-
-  server?: http.Server | https.Server;
-  serverOpts?: http.ServerOptions | https.ServerOptions;
-
-  dev?: boolean;
-}) {
-  // Next.js integration
-  const next = next_ ?? Next({ ...nextOpts, dev });
+  // Next.js setup
+  const next = Next({ ...nextOpts, dev });
   const handle = next.getRequestHandler();
 
-  // Initialize Express and Socket.IO servers
-  const express = express_ ?? Express();
-
-  const server =
-    server_ ??
-    ("key" in serverOpts && "cert" in serverOpts
-      ? https.createServer(serverOpts, express)
-      : http.createServer(serverOpts, express));
-
-  const io = (io_ ?? new IO(server, ioOpts)) as IOWithSession;
-
   // Session setup
-  const session =
-    session_ ??
-    ExpressSession({
-      secret: "secret",
-      resave: true,
-      saveUninitialized: true,
-      ...sessionOpts,
-    });
+  const session = ExpressSession({
+    secret: "secret",
+    resave: true,
+    saveUninitialized: true,
+    ...(createStore ? { store: createStore(ExpressSession) } : {}),
+    ...sessionOpts,
+  });
 
+  // Express setup
+  const express = Express();
   express.use(session);
-  io.use(iosession(session, { autoSave: true }) as any);
+
+  // Server Setup
+  const server =
+    "key" in serverOpts && "cert" in serverOpts
+      ? https.createServer(serverOpts, express)
+      : http.createServer(serverOpts, express);
 
   // Socket.IO setup
+  const io = new IO(ioOpts) as IOWithSession;
+  io.use(iosession(session, { autoSave: true }) as any);
+  
   io.on("connect", (socket) => {
     const session = socket.handshake.session!;
     pruneSockets(session, io);

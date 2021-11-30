@@ -56,6 +56,7 @@ export function nexssocket(iosocket: IOSocket) {
       init
     );
 
+  const subscriptionListenerCount: Record<string, number> = {};
   nexssocket.subscribe = <T>(
     url: string,
     query_listener_?: Query | Listener<T>,
@@ -97,6 +98,9 @@ export function nexssocket(iosocket: IOSocket) {
 
       const { data, dataKey } = response;
 
+      subscriptionListenerCount[dataKey] ||= 0;
+      subscriptionListenerCount[dataKey]++;
+
       listener(data);
       iosocket.on(`subscription:${dataKey}:mutate`, mutationListener);
 
@@ -105,11 +109,17 @@ export function nexssocket(iosocket: IOSocket) {
 
     return {
       async unsub() {
-        iosocket.off(
-          `subscription:${await dataKeyPromise}:mutate`,
-          mutationListener
-        );
-        iosocket.emit(`subscription:unsub`, await dataKeyPromise);
+        const dataKey = await dataKeyPromise;
+
+        iosocket.off(`subscription:${dataKey}:mutate`, mutationListener);
+
+        subscriptionListenerCount[dataKey] ||= 0;
+        subscriptionListenerCount[dataKey]--;
+        if (subscriptionListenerCount[dataKey] < 0)
+          subscriptionListenerCount[dataKey] = 0;
+
+        if (subscriptionListenerCount[dataKey] === 0)
+          iosocket.emit(`subscription:unsub`, await dataKeyPromise);
       },
     };
   };
