@@ -1,6 +1,6 @@
 {
   "name": "@koreanwglasses/nexs-server",
-  "version": "0.0.0-alpha.10",
+  "version": "0.0.0-alpha.11",
   "description": "Next.js application with Express server and Socket.IO",
   "repository": "git@github.com:koreanwglasses/nexs.git",
   "author": "koreanwglasses <koreanwglasses@gmail.com>",
@@ -30,6 +30,8 @@
     "typescript": "^4.5.2"
   },
   "peerDependencies": {
-    "next": "*"
+    "next": "*",
+    "react": "*",
+    "react-dom": "*"
   }
 }
