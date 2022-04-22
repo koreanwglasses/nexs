@@ -29,6 +29,4 @@ export function pruneSockets(req_session: NextApiRequest | Session, io_?: IO) {
       delete session.sockets[socketIdx];
     }
   }
-
-  session.save();
 }

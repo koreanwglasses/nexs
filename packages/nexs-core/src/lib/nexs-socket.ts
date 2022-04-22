@@ -22,10 +22,6 @@ export function nexssocket(iosocket: IOSocket) {
 
   const nexssocket = Object.create(iosocket) as NEXSSocket;
 
-  (async() => {
-    console.log(await socketIdxPromise)
-  })()
-
   nexssocket.getSocketIdx = () => socketIdxPromise;
 
   nexssocket.get = async <T>(url: string, query: Query = {}) =>
